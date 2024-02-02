@@ -1,0 +1,99 @@
+---
+title: "HW 3"
+author: "Angela Zhao"
+output: pdf_document
+---
+
+```{r global_options, echo=FALSE}
+knitr::opts_chunk$set(warning=FALSE, tidy=TRUE, tidy.opts=list(width.cutoff=60))
+```
+
+```{r echo=FALSE,message=FALSE}
+#load libraries
+library(tidyverse)
+library(mosaic)
+#datasets
+creatinine <- read_csv('creatinine.csv')
+marketmodel <- read_csv('marketmodel.csv')
+covid <- read_csv('covid.csv')
+milk <- read_csv('milk.csv')
+```
+
+az9934  
+https://github.com/angela2zhao/HW3
+
+# **Problem 1**
+
+```{r echo=FALSE, message=FALSE}
+# calculating equation of the linear regression model
+model_creat = lm(creatclear ~ age, data=creatinine)
+coef(model_creat)
+```
+
+A) A 55 year old is expected to have a creatinine clearance rate of 113.723 mL/minute.  
+I took the y-intercept, which represents the expected creatinine clearance rate for a 0 year old, and the slope of the line of best fit, which represents the change in creatinine rate with every increase in 1 year of age, and plugged in 55 to find the expected rate. The equation was ŷ = 147.813 - 0.62x, and I used 55 for x to get my answer.
+ 
+B) Creatinine clearance rate changes at a rate of 0.62 mL/min with every increase in 1 year of age.  
+I used the linear model for the relationship between creatinine clearance rate and age, and I found the slope of the line, which represents the change in creatinine clearance rate for every increase in 1 year of age.
+
+C) The person with a healthier/higher creatinine clearance rate for their age is the 40 year old.  
+I took the residuals of both of the people, which represents the difference between their expected and actual rate(residual = actual - expected), and the one with the higher resdiual is the one with a higher rate than expected for their age. I plugged their ages into the equation I got in part A, and I found that the 40 year old had an expected rate of 123.013 mL/min, and the 60 year old had an expected rate of 110.613. The residual for the 40 year old is 135 - 123.013 = 12. The residual for the 60 year old is 112 - 110.613 = 1.4. 12 is higher than 1.4, which means that the 40 year old has a creatinine clearance rate higher/healthier than the expected for that age compared to the 60 year old. 
+
+\newpage
+# **Problem 2**
+
+The beta of a stock measures the systematic risk. A systematic risk is when changes in the economy cause the price of the stocks to rise or fall. The higher the beta, the more change is likely to occur when the stock is affected, in both increasing and decreasing price. A higher beta means more risk if the stock falls, but also higher return if the stock rises. A beta of 0 indicates that the stock is stable and there is no systematic risk. The stock will not change from any activity in the market. Any number higher than zero means there is a systematic risk, and anything below 0 means a negative systematic risk. The slope of a regression line is the beta. It represents how the change in the market affects the stock. If the slope of the regression is higher, there is a higher systematic risk because it means for each change in the market, there is a greater change in the stock.
+
+```{r echo=FALSE, message=FALSE}
+# creating linear models for each stock
+AAPL = lm(AAPL ~ SPY, data=marketmodel)
+GOOG = lm(GOOG ~ SPY, data=marketmodel)
+MRK = lm(MRK ~ SPY, data=marketmodel)
+JNJ = lm(JNJ ~ SPY, data=marketmodel)
+WMT = lm(WMT ~ SPY, data=marketmodel)
+TGT = lm(TGT ~ SPY, data=marketmodel)
+# storing information from each stock in a tibble
+marketreg <- tibble(
+  name = c("AAPL","GOOG","MRK","JNJ","WMT","TGT"),
+  intercept=c(coef(AAPL)[1],coef(GOOG)[1],coef(MRK)[1],coef(JNJ)[1],coef(WMT)[1],coef(TGT)[1]),
+  slope=c(coef(AAPL)[2],coef(GOOG)[2],coef(MRK)[2],coef(JNJ)[2],coef(WMT)[2],coef(TGT)[2]),
+  rsquared=c(rsquared(AAPL),rsquared(GOOG),rsquared(MRK),rsquared(JNJ),rsquared(WMT),rsquared(TGT)))
+marketreg
+```
+
+This table shows the regression of 6 stocks on the return of S&P 500 with the ticker symbol, intercept, slope, and r-squared shown.  
+
+The stock that has the lowest systematic risk is WMT with the lowest slope of 0.52, and the stock with the highest systematic risk is AAPL with a slope of 1.0656. 
+
+\newpage
+# **Problem 3**
+
+```{r echo=FALSE}
+# fit linear model for Italy and Spain covid deaths
+# Italy
+italycovid = lm(log(deaths) ~ days_since_first_death, data=filter(covid,country=="Italy"))
+coef(italycovid)
+# Spain
+spaincovid = lm(log(deaths) ~ days_since_first_death, data=filter(covid,country=="Spain"))
+coef(spaincovid)
+```
+
+The estimated growth rate for Italy is 18.322%, and the doubling time is 4 days.   
+The estimated growth rate for Spain is 27.624%, and the doubling time is 3 days. 
+\
+
+```{r echo=FALSE}
+# line graph for daily deaths over time
+ggplot(covid) + geom_line(aes(x=days_since_first_death, y = log(deaths),color=country)) + labs(title="Covid Deaths Over Days Since First Death in Italy and Spain",x="Days Since First Death")
+```
+
+\newpage
+# **Problem 4**
+
+```{r echo=FALSE}
+# exponential growth model for milk sales 
+lm_milk = lm(log(sales) ~ log(price),data=milk)
+coef(lm_milk)
+```
+
+The estimated price elasticity of demand for milk is -1.62%. For every 1% increase in price, there is a 1.62% decrease in the sales for milk. I calculated the linear model for the log of the two variables and found the slope, which represents the change in sales for the change in price. This shows that the demand for milk does change when the price changes. 
